@@ -20972,6 +20972,7 @@
 	var React = __webpack_require__(1);
 	var classNames = __webpack_require__(171);
 	var Busca = __webpack_require__(172);
+	var UserProfile = __webpack_require__(193);
 
 	var GitHub = React.createClass({
 	    displayName: 'GitHub',
@@ -20979,12 +20980,22 @@
 	    getInitialState: function () {
 	        return {
 	            error: '',
-	            displayErrorClass: true
+	            displayErrorClass: true,
+	            user: null,
+	            repositories: []
 	        };
 	    },
 	    updateError: function (error) {
-	        this.setState({ error: error });
-	        this.setState({ displayErrorClass: error === false });
+	        this.setState({
+	            error: error,
+	            displayErrorClass: error === false
+	        });
+	    },
+	    updateUser: function (user) {
+	        this.setState({ user: user });
+	    },
+	    updateRepositories: function (repositories) {
+	        this.setState({ repositories: repositories });
 	    },
 	    render: function () {
 	        var errorClasses = {
@@ -20995,12 +21006,39 @@
 
 	        return React.createElement(
 	            'div',
-	            null,
-	            React.createElement(Busca, { updateError: this.updateError }),
+	            { className: 'container' },
 	            React.createElement(
-	                'p',
-	                { className: classNames(errorClasses) },
-	                this.state.error
+	                'div',
+	                { className: 'row' },
+	                React.createElement(
+	                    'div',
+	                    { className: 'col-xs-3' },
+	                    React.createElement(
+	                        'h1',
+	                        null,
+	                        'GitHub Profile'
+	                    )
+	                ),
+	                React.createElement(
+	                    'div',
+	                    { className: 'col-xs-9' },
+	                    React.createElement(Busca, {
+	                        updateError: this.updateError,
+	                        updateUser: this.updateUser,
+	                        updateRepositories: this.updateRepositories })
+	                ),
+	                React.createElement(
+	                    'div',
+	                    { className: 'col-xs-12' },
+	                    React.createElement(
+	                        'p',
+	                        { className: classNames(errorClasses) },
+	                        this.state.error
+	                    ),
+	                    React.createElement(UserProfile, {
+	                        user: this.state.user,
+	                        repositories: this.state.repositories })
+	                )
 	            )
 	        );
 	    }
@@ -21067,6 +21105,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
+	var classNames = __webpack_require__(171);
 	var GitHubUser = __webpack_require__(173);
 
 	var Busca = React.createClass({
@@ -21082,59 +21121,88 @@
 	        e.preventDefault();
 	        GitHubUser.getByUsername(this.refs.nome.value).then(function (response) {
 	            this.props.updateError(false);
-	            console.debug(response);
+	            this.props.updateUser(response.data);
+
+	            GitHubUser.getReposByUsername(this.refs.nome.value).then(function (response2) {
+	                console.debug(response2.data);
+	                this.props.updateRepositories(response2.data);
+	            }.bind(this)).catch(function (err) {
+	                if (err) {
+	                    this.props.updateError(err.status === 404 ? 'Repositórios não encontrados.' : err.data.message);
+	                    this.props.updateRepositories([]);
+	                }
+	            }.bind(this));
 	        }.bind(this)).catch(function (err) {
 	            if (err) {
-	                console.debug(err);
-	                this.props.updateError(err.data.message);
+	                this.props.updateError(err.status === 404 ? 'Usuário não encontrado.' : err.data.message);
+	                this.props.updateUser(null);
+	                this.props.updateRepositories([]);
 	            }
 	        }.bind(this));
 	    },
 	    render: function () {
+	        var buscandoClasses = {
+	            'pull-left': true,
+	            hide: this.state.nome.length == 0
+	        };
 	        return React.createElement(
 	            'div',
-	            null,
+	            { className: 'row' },
 	            React.createElement(
-	                'p',
-	                null,
-	                'Buscando por: "',
-	                this.state.nome,
-	                '"'
+	                'div',
+	                { className: 'col-xs-12' },
+	                React.createElement('br', null)
 	            ),
 	            React.createElement(
-	                'form',
-	                { onSubmit: this.handleSubmit },
+	                'div',
+	                { className: 'col-xs-12' },
 	                React.createElement(
-	                    'div',
-	                    { className: 'input-group' },
+	                    'form',
+	                    { onSubmit: this.handleSubmit, className: 'form-inline pull-left' },
 	                    React.createElement(
-	                        'span',
-	                        { className: 'input-group-addon' },
-	                        '@'
-	                    ),
-	                    React.createElement('input', {
-	                        type: 'text',
-	                        name: 'nome',
-	                        id: 'nome',
-	                        ref: 'nome',
-	                        value: this.state.nome,
-	                        className: 'form-control',
-	                        onChange: this.handleChange
-	                    }),
-	                    React.createElement(
-	                        'span',
-	                        { className: 'input-group-btn' },
+	                        'div',
+	                        { className: 'input-group' },
 	                        React.createElement(
-	                            'button',
-	                            { type: 'submit', className: 'btn btn-primary' },
-	                            'Enviar'
+	                            'span',
+	                            { className: 'input-group-addon' },
+	                            'github.com/'
+	                        ),
+	                        React.createElement('input', {
+	                            type: 'text',
+	                            name: 'nome',
+	                            id: 'nome',
+	                            ref: 'nome',
+	                            value: this.state.nome,
+	                            className: 'form-control',
+	                            onChange: this.handleChange
+	                        }),
+	                        React.createElement(
+	                            'span',
+	                            { className: 'input-group-btn' },
+	                            React.createElement(
+	                                'button',
+	                                { type: 'submit', className: 'btn btn-primary' },
+	                                'Buscar'
+	                            )
 	                        )
 	                    )
+	                ),
+	                React.createElement(
+	                    'p',
+	                    { className: classNames(buscandoClasses) },
+	                    ' Buscando por: "',
+	                    this.state.nome,
+	                    '"'
 	                )
 	            )
 	        );
 	    }
 	});
+
+	Busca.propTypes = {
+	    updateUser: React.PropTypes.func.isRequired,
+	    updateRepositories: React.PropTypes.func.isRequired
+	};
 
 	module.exports = Busca;
 
@@ -22366,6 +22434,213 @@
 	  };
 	};
 
+
+/***/ },
+/* 193 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var classNames = __webpack_require__(171);
+	var UserInfo = __webpack_require__(194);
+	var UserRepositories = __webpack_require__(195);
+
+	var UserProfile = React.createClass({
+	    displayName: 'UserProfile',
+
+	    getInitialState: function () {
+	        return {
+	            user: null,
+	            repositories: []
+	        };
+	    },
+	    componentWillReceiveProps: function (props) {
+	        this.setState({
+	            user: props.user,
+	            repositories: props.repositories
+	        });
+	    },
+	    render: function () {
+	        var okClasses = {
+	            row: true,
+	            hide: this.state.user === null
+	        };
+
+	        return React.createElement(
+	            'div',
+	            { className: classNames(okClasses) },
+	            React.createElement(
+	                'div',
+	                { className: 'col-xs-12' },
+	                React.createElement('hr', null)
+	            ),
+	            React.createElement(
+	                'div',
+	                { className: 'col-xs-2' },
+	                React.createElement(UserInfo, { user: this.state.user })
+	            ),
+	            React.createElement(
+	                'div',
+	                { className: 'col-xs-10' },
+	                React.createElement(UserRepositories, { repositories: this.state.repositories })
+	            )
+	        );
+	    }
+	});
+
+	UserProfile.propTypes = {
+	    user: React.PropTypes.object,
+	    repositories: React.PropTypes.array
+	};
+
+	module.exports = UserProfile;
+
+/***/ },
+/* 194 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+
+	function UserInfo(props) {
+	    return props.user ? React.createElement(
+	        "div",
+	        null,
+	        React.createElement("img", { src: props.user.avatar_url, alt: "avatar of user", className: "img-circle", width: "150" }),
+	        React.createElement(
+	            "h3",
+	            null,
+	            props.user.login
+	        ),
+	        React.createElement(
+	            "p",
+	            null,
+	            props.user.name
+	        ),
+	        React.createElement(
+	            "p",
+	            null,
+	            "Seguidores: ",
+	            props.user.followers,
+	            "/ Seguindo: ",
+	            props.user.following
+	        ),
+	        React.createElement(
+	            "p",
+	            null,
+	            React.createElement(
+	                "a",
+	                { href: props.user.html_url, className: "btn btn-info" },
+	                "Ir para o Github"
+	            )
+	        )
+	    ) : null;
+	}
+
+	UserInfo.propTypes = {
+	    user: React.PropTypes.object
+	};
+
+	module.exports = UserInfo;
+
+/***/ },
+/* 195 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+	var classNames = __webpack_require__(171);
+
+	var UserRepositories = React.createClass({
+	    displayName: 'UserRepositories',
+
+	    getInitialState: function () {
+	        return {
+	            count: 0,
+	            repositories: []
+	        };
+	    },
+	    componentWillReceiveProps: function (props) {
+	        this.setState({
+	            count: props.repositories.length,
+	            repositories: props.repositories
+	        });
+	    },
+	    render: function () {
+	        var repos = this.state.repositories.map(function (item, k) {
+	            return React.createElement(
+	                'li',
+	                { className: 'list-group-item', key: k },
+	                React.createElement(
+	                    'h4',
+	                    null,
+	                    React.createElement(
+	                        'a',
+	                        { href: item.html_url },
+	                        item.name,
+	                        ' ',
+	                        React.createElement(
+	                            'small',
+	                            { className: 'label label-default' },
+	                            item.full_name
+	                        )
+	                    )
+	                ),
+	                React.createElement(
+	                    'small',
+	                    null,
+	                    React.createElement(
+	                        'a',
+	                        { href: item.stargazers_url },
+	                        item.stargazers_count,
+	                        ' estrelas'
+	                    ),
+	                    '/ ',
+	                    React.createElement(
+	                        'a',
+	                        { href: item.forks_url },
+	                        item.forks_count,
+	                        ' forks'
+	                    ),
+	                    '/ ',
+	                    React.createElement(
+	                        'a',
+	                        { href: item.watchers_url },
+	                        item.watchers_count,
+	                        ' watchers'
+	                    ),
+	                    '/ ',
+	                    item.language
+	                ),
+	                React.createElement(
+	                    'p',
+	                    null,
+	                    item.description
+	                )
+	            );
+	        });
+
+	        return React.createElement(
+	            'div',
+	            { className: 'row' },
+	            React.createElement(
+	                'div',
+	                { className: 'col-xs-12' },
+	                this.state.count,
+	                ' repositórios',
+	                React.createElement('hr', null),
+	                React.createElement(
+	                    'div',
+	                    { className: 'list-group' },
+	                    repos
+	                )
+	            )
+	        );
+	    }
+	});
+
+	UserRepositories.propTypes = {
+	    repositories: React.PropTypes.array
+	};
+
+	module.exports = UserRepositories;
 
 /***/ }
 /******/ ]);
