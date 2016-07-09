@@ -26,16 +26,12 @@ var UserRepositories = React.createClass({
                         </a>
                     </h4>
                     <small>
-                        <a href={item.stargazers_url}>
-                            {item.stargazers_count} estrelas
-                        </a>
-                         / <a href={item.forks_url}>
-                            {item.forks_count} forks
-                        </a>
-                         / <a href={item.watchers_url}>
-                            {item.watchers_count} watchers
-                        </a>
-                         / {item.language}
+                        <a title="Estrelas" href={item.stargazers_url}>
+                            {item.stargazers_count} <i className="glyphicon glyphicon-star"></i>
+                        </a> / <a title="Forks" href={item.forks_url}>
+                            {item.forks_count} <i className="glyphicon glyphicon-random"></i>
+                        </a> / {item.watchers_count} <i className="glyphicon glyphicon-eye-open"></i>
+                        &nbsp;/ {item.language}
                     </small>
                     <p>{item.description}</p>
                 </li>
@@ -45,7 +41,7 @@ var UserRepositories = React.createClass({
         return (
             <div className="row">
                 <div className="col-xs-12">
-                    {this.state.count} repositórios
+                    <h3>{this.state.count} repositórios</h3>
                     <hr/>
                     <div className="list-group">
                         {repos}

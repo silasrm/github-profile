@@ -27,10 +27,10 @@ var UserProfile = React.createClass({
                 <div className="col-xs-12">
                     <hr/>
                 </div>
-                <div className="col-xs-2">
+                <div className="col-xs-12">
                     <UserInfo user={this.state.user} />
                 </div>
-                <div className="col-xs-10">
+                <div className="col-xs-12">
                     <UserRepositories repositories={this.state.repositories} />
                 </div>
             </div>

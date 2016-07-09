@@ -18,7 +18,6 @@ var Busca = React.createClass({
 
                 GitHubUser.getReposByUsername(this.refs.nome.value)
                     .then(function(response2) {
-                        console.debug(response2.data);
                         this.props.updateRepositories(response2.data);
                     }.bind(this))
                     .catch(function (err) {
@@ -41,6 +40,7 @@ var Busca = React.createClass({
             'pull-left': true,
             hide: this.state.nome.length == 0
         };
+
         return (
             <div className="row">
                 <div className="col-xs-12"><br/></div>
@@ -54,6 +54,7 @@ var Busca = React.createClass({
                                 id="nome"
                                 ref="nome"
                                 value={this.state.nome}
+                                autoFocus={true}
                                 className="form-control"
                                 onChange={this.handleChange}
                             />

@@ -21124,7 +21124,6 @@
 	            this.props.updateUser(response.data);
 
 	            GitHubUser.getReposByUsername(this.refs.nome.value).then(function (response2) {
-	                console.debug(response2.data);
 	                this.props.updateRepositories(response2.data);
 	            }.bind(this)).catch(function (err) {
 	                if (err) {
@@ -21145,6 +21144,7 @@
 	            'pull-left': true,
 	            hide: this.state.nome.length == 0
 	        };
+
 	        return React.createElement(
 	            'div',
 	            { className: 'row' },
@@ -21173,6 +21173,7 @@
 	                            id: 'nome',
 	                            ref: 'nome',
 	                            value: this.state.nome,
+	                            autoFocus: true,
 	                            className: 'form-control',
 	                            onChange: this.handleChange
 	                        }),
@@ -21217,7 +21218,7 @@
 	        return axios.get('https://api.github.com/users/' + username);
 	    },
 	    getReposByUsername: function (username) {
-	        return axios.get('https://api.github.com/users/' + username + '/repos');
+	        return axios.get('https://api.github.com/users/' + username + '/repos?per_page=50');
 	    }
 	};
 
@@ -22475,12 +22476,12 @@
 	            ),
 	            React.createElement(
 	                'div',
-	                { className: 'col-xs-2' },
+	                { className: 'col-xs-12' },
 	                React.createElement(UserInfo, { user: this.state.user })
 	            ),
 	            React.createElement(
 	                'div',
-	                { className: 'col-xs-10' },
+	                { className: 'col-xs-12' },
 	                React.createElement(UserRepositories, { repositories: this.state.repositories })
 	            )
 	        );
@@ -22501,38 +22502,83 @@
 	var React = __webpack_require__(1);
 
 	function UserInfo(props) {
-	    return props.user ? React.createElement(
-	        "div",
-	        null,
-	        React.createElement("img", { src: props.user.avatar_url, alt: "avatar of user", className: "img-circle", width: "150" }),
-	        React.createElement(
-	            "h3",
+	    var results = null;
+	    if (props.user) {
+	        var bio = props.user.bio ? React.createElement(
+	            "span",
 	            null,
-	            props.user.login
-	        ),
-	        React.createElement(
-	            "p",
-	            null,
-	            props.user.name
-	        ),
-	        React.createElement(
-	            "p",
-	            null,
-	            "Seguidores: ",
-	            props.user.followers,
-	            "/ Seguindo: ",
-	            props.user.following
-	        ),
-	        React.createElement(
-	            "p",
-	            null,
+	            props.user.bio,
+	            "."
+	        ) : null;
+	        var blog = props.user.blog ? React.createElement(
+	            "a",
+	            { href: props.user.blog },
+	            props.user.blog
+	        ) : null;
+
+	        results = React.createElement(
+	            "div",
+	            { className: "row" },
 	            React.createElement(
-	                "a",
-	                { href: props.user.html_url, className: "btn btn-info" },
-	                "Ir para o Github"
+	                "div",
+	                { className: "col-xs-2 text-center" },
+	                React.createElement("img", { src: props.user.avatar_url, alt: "avatar of user", className: "img-circle", width: "100" }),
+	                React.createElement("br", null),
+	                React.createElement(
+	                    "p",
+	                    null,
+	                    React.createElement(
+	                        "strong",
+	                        null,
+	                        props.user.login
+	                    )
+	                )
+	            ),
+	            React.createElement(
+	                "div",
+	                { className: "col-xs-8" },
+	                React.createElement(
+	                    "h2",
+	                    null,
+	                    props.user.name
+	                ),
+	                React.createElement(
+	                    "p",
+	                    null,
+	                    props.user.location,
+	                    ".",
+	                    bio,
+	                    blog
+	                ),
+	                React.createElement(
+	                    "p",
+	                    null,
+	                    props.user.followers,
+	                    " seguidores / ",
+	                    props.user.following,
+	                    " seguidos /  ",
+	                    props.user.public_repos,
+	                    " repositórios / ",
+	                    props.user.public_gists,
+	                    " gists"
+	                )
+	            ),
+	            React.createElement(
+	                "div",
+	                { className: "col-xs-2" },
+	                React.createElement("br", null),
+	                React.createElement("br", null),
+	                React.createElement("br", null),
+	                React.createElement(
+	                    "a",
+	                    { href: props.user.html_url, className: "btn btn-info" },
+	                    "Ir para o Github"
+	                )
 	            )
-	        )
-	    ) : null;
+	        );
+	    }
+
+	    return results;
 	}
 
 	UserInfo.propTypes = {
@@ -22588,25 +22634,24 @@
 	                    null,
 	                    React.createElement(
 	                        'a',
-	                        { href: item.stargazers_url },
+	                        { title: 'Estrelas', href: item.stargazers_url },
 	                        item.stargazers_count,
-	                        ' estrelas'
+	                        ' ',
+	                        React.createElement('i', { className: 'glyphicon glyphicon-star' })
 	                    ),
-	                    '/ ',
+	                    ' / ',
 	                    React.createElement(
 	                        'a',
-	                        { href: item.forks_url },
+	                        { title: 'Forks', href: item.forks_url },
 	                        item.forks_count,
-	                        ' forks'
+	                        ' ',
+	                        React.createElement('i', { className: 'glyphicon glyphicon-random' })
 	                    ),
-	                    '/ ',
-	                    React.createElement(
-	                        'a',
-	                        { href: item.watchers_url },
-	                        item.watchers_count,
-	                        ' watchers'
-	                    ),
-	                    '/ ',
+	                    ' / ',
+	                    item.watchers_count,
+	                    ' ',
+	                    React.createElement('i', { className: 'glyphicon glyphicon-eye-open' }),
+	                    ' / ',
 	                    item.language
 	                ),
 	                React.createElement(
@@ -22623,8 +22668,12 @@
 	            React.createElement(
 	                'div',
 	                { className: 'col-xs-12' },
-	                this.state.count,
-	                ' repositórios',
+	                React.createElement(
+	                    'h3',
+	                    null,
+	                    this.state.count,
+	                    ' repositórios'
+	                ),
 	                React.createElement('hr', null),
 	                React.createElement(
 	                    'div',
